@@ -1,7 +1,14 @@
 import re
-from typing import List
+from typing import List, Set
 
 from .vector_store import VectorStore
+
+STOPWORDS: Set[str] = {
+    "a", "an", "the", "and", "or", "of", "to", "in", "on", "for", "with", "at",
+    "from", "by", "is", "are", "was", "were", "be", "this", "that", "these",
+    "those", "what", "how", "when", "where", "who", "does", "do", "can", "you",
+    "your", "my", "i", "me", "we", "it", "as", "than",
+}
 
 
 def _tokens(text: str) -> set[str]:
@@ -9,18 +16,27 @@ def _tokens(text: str) -> set[str]:
 
 
 def _keyword_overlap(query: str, doc: str) -> float:
-    qt, dt = _tokens(query), _tokens(doc)
+    """Stopword-filtered lexical overlap. In offline mode this is the relevance gate."""
+    qt = _tokens(query) - STOPWORDS
+    dt = _tokens(doc) - STOPWORDS
     if not qt:
         return 0.0
     return len(qt & dt) / len(qt)
 
 
 def hybrid_search(store: VectorStore, query: str, top_k: int, where: dict | None = None) -> List[dict]:
-    """Fetch one list, rank it twice (vector + keyword), fuse with Reciprocal Rank Fusion."""
-    vec_hits = store.search(query, top_k=top_k, where=where)
+    """Fetch a wide candidate pool, rank it twice (vector + keyword), fuse with RRF."""
+    # The hashing embedder's vectors are coarse, so a narrow fetch window can
+    # miss keyword-relevant chunks before fusion ever sees them. Fetch a wider
+    # candidate pool (settings.fetch_k) and return the fused top_k.
+    from .config import settings
+
+    fetch_k = max(top_k, settings.fetch_k)
+    vec_hits = store.search(query, top_k=fetch_k, where=where)
     items = {h["id"]: h for h in vec_hits}
     for h in items.values():
         h["keyword"] = _keyword_overlap(query, h["text"])
+        h["lexical"] = h["keyword"]
 
     vec_ranked = sorted(items.values(), key=lambda h: h["score"], reverse=True)
     kw_ranked = sorted(items.values(), key=lambda h: h["keyword"], reverse=True)

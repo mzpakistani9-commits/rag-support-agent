@@ -30,11 +30,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 def evaluate():
     from app.main import store
+    from app.answer import answer_question
     from app.retrieval import hybrid_search
     from app.config import settings
 
     correct = 0
-    escalated_false_negatives = 0
+    escalation_false_negatives = 0
     rows = []
     for question, gold_doc in GOLD_QA.items():
         hits = hybrid_search(store, question, settings.top_k)
@@ -45,20 +46,23 @@ def evaluate():
 
     hit_rate = correct / len(GOLD_QA)
     for q in QUERIES_WITHOUT_ANSWER:
-        hits = hybrid_search(store, q, settings.top_k)
-        if hits and hits[0]["score"] >= settings.escalation_threshold:
-            escalated_false_negatives += 1
+        result = answer_question(q, hybrid_search(store, q, settings.top_k))
+        if result["escalated"] is False:
+            escalation_false_negatives += 1
 
     print("\n=== RAG Retrieval Evaluation ===")
     for question, gold, got, ok in rows:
         print(f"  {'PASS' if ok else 'FAIL'}  {question}")
         print(f"        gold={gold}  got={got}")
+    for q in QUERIES_WITHOUT_ANSWER:
+        result = answer_question(q, hybrid_search(store, q, settings.top_k))
+        print(f"  {'PASS' if result['escalated'] else 'FAIL'}  escalation check: {q}")
 
     print(f"\nRetrieval hit@k: {hit_rate:.0%} ({correct}/{len(GOLD_QA)})")
-    print(f"Correct escalation for out-of-KB questions: {len(QUERIES_WITHOUT_ANSWER) - escalated_false_negatives}/{len(QUERIES_WITHOUT_ANSWER)}")
+    print(f"Correct escalation for out-of-KB questions: {len(QUERIES_WITHOUT_ANSWER) - escalation_false_negatives}/{len(QUERIES_WITHOUT_ANSWER)}")
     print(
         "Quality gate: "
-        + ("PASS" if hit_rate >= 0.8 and escalated_false_negatives == 0 else "FAILED")
+        + ("PASS" if hit_rate >= 0.8 and escalation_false_negatives == 0 else "FAILED")
     )
     return hit_rate
 

@@ -63,7 +63,7 @@ export EMBEDDING_MODEL=text-embedding-3-small
 export OPENAI_MODEL=gpt-4o-mini
 ```
 
-No API key? The pipeline runs fully offline with a deterministic hash embedder and extractive fallback — so the demo and tests work in CI with zero secrets.
+No API key? The pipeline runs fully offline with a deterministic hash embedder: retrieval ranks with vector+lexical fusion, and the fallback answers **extractively from the top chunk** when a lexically-relevant chunk is found, escalating only when nothing relevant matched. So the demo and tests run in CI with zero secrets — but plug in `OPENAI_API_KEY` for true semantic grounding + LLM answers.
 
 ## Endpoints
 
@@ -83,7 +83,7 @@ python scripts/evaluate.py
 Runs 16 gold question→document pairs through the retriever and prints:
 
 ```
-Retrieval hit@k: 88%
+Retrieval hit@k: 100%
 Correct escalation for out-of-KB questions: 2/2
 Quality gate: PASS
 ```
@@ -111,5 +111,7 @@ FastAPI · ChromaDB · OpenAI embeddings (optional) · OpenAI chat (optional) ·
 | `OPENAI_API_KEY` / `OPENAI_MODEL` | — / `gpt-4o-mini` | LLM grounding (optional) |
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` | `600` / `80` | Chunking budget |
 | `TOP_K` | `4` | Context passages per query |
-| `ESCALATION_THRESHOLD` | `0.62` | Below this → escalate |
+| `FETCH_K` | `12` | Wider candidate pool fused by RRF (prevents keyword-relevant chunks being dropped by coarse hash vectors) |
+| `ESCALATION_THRESHOLD` | `0.62` | Semantic mode: similarity below this → escalate (`OPENAI_API_KEY` set) |
+| `OFFLINE_ESCALATION_THRESHOLD` | `0.2` | Offline mode: lexical overlap below this → escalate |
 | `USE_HYBRID` | `1` | Toggle keyword+vector fusion |

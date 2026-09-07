@@ -13,7 +13,9 @@ class Settings:
     chunk_size: int = int(os.getenv("CHUNK_SIZE", "600"))
     chunk_overlap: int = int(os.getenv("CHUNK_OVERLAP", "80"))
     top_k: int = int(os.getenv("TOP_K", "4"))
+    fetch_k: int = int(os.getenv("FETCH_K", "12"))
     escalation_threshold: float = float(os.getenv("ESCALATION_THRESHOLD", "0.62"))
+    offline_escalation_threshold: float = float(os.getenv("OFFLINE_ESCALATION_THRESHOLD", "0.2"))
     use_hybrid: bool = os.getenv("USE_HYBRID", "1") == "1"
 
 

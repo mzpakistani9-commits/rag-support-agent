@@ -24,11 +24,11 @@ def build_prompt(user_question: str, context: str) -> str:
 
 def answer_question(user_question: str, hits: List[dict]) -> dict:
     """Return dict with answer + sources + escalation flag."""
-    top_score = hits[0]["similarity"] if hits else 0.0
-    context = format_context(hits)
     need_llm = settings.openai_api_key and settings.embedding_provider == "openai"
 
     if need_llm:
+        top_score = hits[0]["similarity"] if hits else 0.0
+        context = format_context(hits)
         from openai import OpenAI
 
         client = OpenAI(api_key=settings.openai_api_key)
@@ -44,18 +44,23 @@ def answer_question(user_question: str, hits: List[dict]) -> dict:
             answer = answer.replace("TRIGGER_ESCALATION", "").strip()
         return {"answer": answer, "sources": hits, "escalated": escalated, "confidence": round(top_score, 4)}
 
-    # Fallback (no LLM key): extractive answer from the top chunk.
-    extracted = hits[0]["text"] if hits else "I don't have enough information from the knowledge base."
-    escalated = top_score < settings.escalation_threshold
+    # Offline (no LLM key): the hashing embedder's cosine is compressed and not
+    # calibrated, so gate on stopword-filtered lexical overlap instead. Answer
+    # extractively from the top chunk when lexically relevant; escalate only when
+    # nothing relevant was found.
+    top = hits[0] if hits else None
+    relevance = top["lexical"] if top else 0.0
+    escalated = not top or relevance < settings.offline_escalation_threshold
+    answer = (
+        "I don't have enough information from the knowledge base. A human agent will follow up."
+        if escalated
+        else "Based on the knowledge base:\n\n" + top["text"]
+    )
     return {
-        "answer": (
-            "Based on the knowledge base:\n\n" + extracted
-            if not escalated
-            else "I don't have enough information from the knowledge base. A human agent will follow up."
-        ),
+        "answer": answer,
         "sources": hits,
         "escalated": escalated,
-        "confidence": round(top_score, 4),
+        "confidence": round(relevance, 4),
     }
 
 
