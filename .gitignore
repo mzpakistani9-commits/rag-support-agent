@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.chroma/
+.env
+*.sqlite3
+.pytest_cache/
+coverage.xml
+htmlcov/
+data/ingested/
