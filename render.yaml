@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: rag-support-agent
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn render_app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: CHROMA_DIR
+        value: /tmp/chroma_db
+      - key: PYTHON_VERSION
+        value: "3.12"
+    healthCheckPath: /health
