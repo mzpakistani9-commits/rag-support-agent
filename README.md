@@ -1,3 +1,12 @@
+---
+title: RAG Support Agent
+emoji: 🔍
+colorFrom: indigo
+colorTo: blue
+sdk: static
+pinned: false
+---
+
 # RAG Support Agent
 
 A production-style **Retrieval-Augmented Generation (RAG)** system that powers an AI customer-support assistant: chat with your knowledge base, get grounded answers with source citations, and **escalate automatically** to a human when the bot lacks confidence.
@@ -6,6 +15,8 @@ Built to answer the two most common AI-Automation interview questions directly:
 **"Explain a RAG system you built"** and **"How do you measure whether it actually works?"**
 
 [![CI](https://github.com/mzpakistani9-commits/rag-support-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/mzpakistani9-commits/rag-support-agent/actions)
+[![HF Space](https://img.shields.io/badge/%F0%9F%A4%97-Demo-orange)](https://mzubair-dh-rag-support-agent.hf.space)
+[![Render](https://img.shields.io/badge/Render-Live%20API-green)](https://rag-support-agent.onrender.com)
 
 ---
 
@@ -40,6 +51,13 @@ pip install -r requirements.txt
 python scripts/seed.py            # ingest the sample knowledge base
 uvicorn app.main:app --port 8000  # start API
 ```
+
+## Live Demo
+
+- **Interactive Docs:** [rag-support-agent.onrender.com/docs](https://rag-support-agent.onrender.com/docs) — try every endpoint live
+- **HF Static Landing Page:** [mzubair-dh-rag-support-agent.hf.space](https://mzubair-dh-rag-support-agent.hf.space) — overview + architecture
+
+> **Deploy yourself:** click [![Deploy](https://img.shields.io/badge/Render-Deploy-blue)](https://render.com) and connect this repo — `render.yaml` configures the free-tier deployment.
 
 ```bash
 # Ask a question (no LLM key needed — falls back to extractive answer)
