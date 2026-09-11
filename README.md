@@ -15,7 +15,7 @@ Built to answer the two most common AI-Automation interview questions directly:
 **"Explain a RAG system you built"** and **"How do you measure whether it actually works?"**
 
 [![CI](https://github.com/mzpakistani9-commits/rag-support-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/mzpakistani9-commits/rag-support-agent/actions)
-[![HF Space](https://img.shields.io/badge/%F0%9F%A4%97-Demo-orange)](https://mzubair-dh-rag-support-agent.hf.space)
+[![HF Space](https://img.shields.io/badge/%F0%9F%A4%97-Demo-orange)](https://mzubair-dh-rag-support-agent.static.hf.space)
 [![Render](https://img.shields.io/badge/Render-Live%20API-green)](https://rag-support-agent.onrender.com)
 
 ---
@@ -55,7 +55,7 @@ uvicorn app.main:app --port 8000  # start API
 ## Live Demo
 
 - **Interactive Docs:** [rag-support-agent.onrender.com/docs](https://rag-support-agent.onrender.com/docs) — try every endpoint live
-- **HF Static Landing Page:** [mzubair-dh-rag-support-agent.hf.space](https://mzubair-dh-rag-support-agent.hf.space) — overview + architecture
+- **HF Static Landing Page:** [mzubair-dh-rag-support-agent.static.hf.space](https://mzubair-dh-rag-support-agent.static.hf.space) — overview + architecture
 
 > **Deploy yourself:** click [![Deploy](https://img.shields.io/badge/Render-Deploy-blue)](https://render.com) and connect this repo — `render.yaml` configures the free-tier deployment.
 
